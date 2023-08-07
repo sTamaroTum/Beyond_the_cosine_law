@@ -12,19 +12,20 @@ import matplotlib.pyplot as plt
 plt.close("all")
 plt.rc( 'text', usetex=True ) 
 plt.rc('font',family = 'sans-serif',  size=18)
-
 plt.rcParams.update({
     "text.usetex": True,
     "font.family": "serif",
     "font.serif": ["Helvetica"],
 })
 
+#%% Define constants
 hub_height = 110
 R          = 65
 k_arr      = np.array([0, 0.1, 0.3])
 z          = np.linspace(hub_height-R*1.1,hub_height+R*1.1,21)
+#%% Compute velocity profile (power law) and fit linear shear
 plt.figure(figsize=(5.8,3.7))
-mark = np.array(["o","^","s"])
+mark      = np.array(["o","^","s"])
 scenarios = np.array(['Scenarios \#1,2','Scenarios \#3','Scenarios \#4'])
 c = 0
 for k in k_arr:
@@ -45,4 +46,5 @@ plt.yticks(np.linspace(-0.6,0.6,5),fontsize=18)
 plt.xticks(np.linspace(0.7,1.2,6),fontsize=18)
 plt.gca().invert_yaxis()
 plt.tight_layout()
+#%% Save figure
 plt.savefig('Figures/fig6.png',dpi=300)

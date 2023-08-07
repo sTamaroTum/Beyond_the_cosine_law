@@ -21,21 +21,21 @@ plt.rcParams.update({
 })
 
 plt.rcParams["text.latex.preamble"] = r"\DeclareUnicodeCharacter{0007}{\ensuremath{\alpha}}"
-
-x = loadmat('exp_data/Sulution_opt_7_param.mat')
-
+#%% Load data
+x        = loadmat('exp_data/Sulution_opt_7_param.mat')
+#%%
 fig, ax1 = plt.subplots(figsize=(5.5,3.5))
-ax2 = ax1.twinx()
-xx = x['x_num'][1][0]
-xx= xx.astype(float)
+ax2      = ax1.twinx()
+xx       = x['x_num'][1][0]
+xx       = xx.astype(float)
 ax1.plot(np.squeeze(xx),np.squeeze(x['y_num'][1][0]), 'C0s-',label='$C_D$',markersize=12, zorder=1000, clip_on=False)
 ax1.plot(np.squeeze(xx)+870,np.squeeze(x['y_num'][0][0]), 'C1^--',label='$C_{L,\a}$',markersize=12)
 ax1.legend(frameon=False,bbox_to_anchor=(0.08,1))
-xx = x['x_pat'][1][0]
-xx= xx.astype(float)
+xx       = x['x_pat'][1][0]
+xx       = xx.astype(float)
 ax1.fill_between(np.squeeze(xx)[0:3],np.squeeze(x['y_pat'][1][0])[0:3],np.flip(np.squeeze(x['y_pat'][1][0])[3:6]),alpha=0.2,color='C0',edgecolor=None)#, 'C0s-',label='$c_D$')
-xx = x['x_pat'][0][0]
-xx= xx.astype(float)
+xx       = x['x_pat'][0][0]
+xx       = xx.astype(float)
 ax2.fill_between(np.squeeze(xx)[0:3],np.squeeze(x['y_pat'][0][0])[0:3],np.flip(np.squeeze(x['y_pat'][0][0])[3:6]),alpha=0.2,color='C1',edgecolor=None)#, 'C0s-',label='$c_D$')
 xx = x['x_num'][0][0]
 xx= xx.astype(float)
@@ -54,4 +54,5 @@ ax1.set_xlim([400,850])
 ax2.grid(None)
 ax1.grid(which='major', axis='both')
 plt.tight_layout()
+#%% Save figure
 plt.savefig('Figures/fig11.png',dpi=300)
