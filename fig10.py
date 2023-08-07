@@ -1,32 +1,12 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Aug  7 10:10:15 2023
-
-@author: saimon
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
 
 plt.close("all")
-plt.rc( 'text', usetex=True ) 
-plt.rc('font',family = 'sans-serif',  size=18)
-
-plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "serif",
-    "font.serif": ["Helvetica"],
-})
-
-plt.rcParams["text.latex.preamble"] = r"\DeclareUnicodeCharacter{0007}{\ensuremath{\alpha}}"
-
-x = loadmat('Inflow_All3.mat')
+x = loadmat('exp_data/Inflow_All3.mat')
 from scipy.optimize import curve_fit
 def func(x,a):
     return 1 - a*x/0.55
-
 plt.figure(1,figsize=(9,4.0))
 #%% Plot mean velocity
 plt.subplot(1,2,1)
@@ -87,4 +67,4 @@ plt.xlabel('$TI$ [\%]')
 plt.grid()
 plt.text(17.5,1.35,'(b)')
 plt.subplots_adjust(left=0.15, bottom=0.2, right=0.95, top=0.8, wspace=0.1, hspace=0)
-plt.savefig('Figures/fig10.png',dpi=300)
+# plt.savefig('Figures/fig10.png',dpi=300)

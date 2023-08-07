@@ -1,27 +1,7 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Mar  1 11:59:05 2023
-
-@author: saimon
-"""
-
-
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
-
 plt.close("all")
-plt.rc( 'text', usetex=True ) 
-plt.rc('font',family = 'sans-serif',  size=18)
-
-plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "serif",
-    "font.serif": ["Helvetica"],
-})
-
-plt.rcParams["text.latex.preamble"] = r"\DeclareUnicodeCharacter{0007}{\ensuremath{\alpha}}"
 #%%
 x = loadmat('exp_data/opt_7_param_INFLOW_ExpNumComparison_pitch.mat')
 plt.figure(1,figsize=(12,5))
@@ -92,7 +72,6 @@ plt.ylim([7.2,8.4])
 plt.yticks([7.2,7.6,8,8.4])
 plt.xticks(np.linspace(-40,40,5))
 plt.xlim([-40,40])
-
 plt.subplots_adjust(left=0.1, bottom=0.2, right=0.95, top=0.9, wspace=0.2, hspace=0.2)
 #%%
-plt.savefig('Figures/figb1.png',dpi=300)
+# plt.savefig('Figures/figb1.png',dpi=300)

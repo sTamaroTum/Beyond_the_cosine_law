@@ -1,24 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Aug  7 10:33:38 2023
-
-@author: saimon
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
 
 plt.close("all")
-plt.rc( 'text', usetex=True ) 
-plt.rc('font',family = 'sans-serif',  size=18)
-plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "serif",
-    "font.serif": ["Helvetica"],
-})
-plt.rcParams["text.latex.preamble"] = r"\DeclareUnicodeCharacter{0007}{\ensuremath{\alpha}}"
 #%% Plot ETA_P
 x = loadmat('exp_data/opt_7_param_INFLOW_ExpNumComparison_power.mat')
 plt.figure(1,figsize=(12,5.5))
@@ -35,7 +19,6 @@ plt.xticks(np.linspace(-40,40,5),color='white')
 plt.xlim([-40,40])
 plt.yticks([0.6,0.8,1.0],color='white')
 plt.title('High-TI',fontsize=18)
-#
 plt.subplot(2,3,2)
 xx       = x['x_num'][1][0]
 xx       = xx.astype(float)
@@ -84,7 +67,6 @@ plt.ylim([0.6,1.1])
 plt.xticks(np.linspace(-40,40,5))
 plt.xlim([-40,40])
 plt.yticks([0.6,0.8,1.0],color='white')
-#
 plt.subplot(2,3,5)
 xx       = x['x_num'][1][0]
 xx       = xx.astype(float)
@@ -100,7 +82,6 @@ plt.ylim([0.6,1.1])
 plt.xticks(np.linspace(-40,40,5))
 plt.xlim([-40,40])
 plt.yticks([0.6,0.8,1.0],color='white')
-#
 plt.subplot(2,3,4)
 xx       = x['x_num'][2][0]
 xx       = xx.astype(float)
@@ -116,7 +97,6 @@ plt.grid()
 plt.ylim([0.6,1.1])
 plt.xticks(np.linspace(-40,40,5))
 plt.xlim([-40,40])
-#
 plt.subplots_adjust(left=0.1, bottom=0.15, right=0.95, top=0.85, wspace=0.1, hspace=0.15)
 #%% Save figure
-plt.savefig('Figures/fig12.png',dpi=300)
+# plt.savefig('Figures/fig12.png',dpi=300)

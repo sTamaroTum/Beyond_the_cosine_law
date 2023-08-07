@@ -1,26 +1,8 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Aug  7 10:12:30 2023
-
-@author: saimon
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
 
 plt.close("all")
-plt.rc( 'text', usetex=True ) 
-plt.rc('font',family = 'sans-serif',  size=18)
-
-plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "serif",
-    "font.serif": ["Helvetica"],
-})
-
-plt.rcParams["text.latex.preamble"] = r"\DeclareUnicodeCharacter{0007}{\ensuremath{\alpha}}"
 #%% Load data
 x        = loadmat('exp_data/Sulution_opt_7_param.mat')
 #%%
@@ -55,4 +37,4 @@ ax2.grid(None)
 ax1.grid(which='major', axis='both')
 plt.tight_layout()
 #%% Save figure
-plt.savefig('Figures/fig11.png',dpi=300)
+# plt.savefig('Figures/fig11.png',dpi=300)

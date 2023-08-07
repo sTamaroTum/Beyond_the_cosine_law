@@ -1,26 +1,5 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Mar 15 14:39:54 2023
-
-@author: saimon
-"""
-
 import numpy as np
-gamma_les = np.linspace(-30,30,7)
-
 import matplotlib.pyplot as plt
-plt.rc( 'text', usetex=True ) 
-plt.rc('font',family = 'sans-serif',  size=18)
-
-plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "serif",
-    "font.serif": ["Helvetica"],
-})
-
-plt.close("all")
-
 from scipy.io import loadmat
 from scipy import interpolate
 
@@ -35,6 +14,7 @@ R     = 65                          # rotor radius [m]
 ct_array    = np.zeros((len(files),4))
 eta_p_array = np.zeros((len(files),4))
 tsr_array   = np.zeros(len(files))
+gamma_les   = np.linspace(-30,30,7)
 #%% Load results for 
 c = 0
 for filetto in files:
@@ -58,7 +38,6 @@ eta_new    = np.zeros((len(ct_target),len(tsr_array)))
 for i in np.arange(len(tsr_array)):
     f = interpolate.interp1d(ct_array[i,:], eta_p_array[i,:],kind='cubic',bounds_error=False)#,fill_value = 'extrapolate')
     eta_new[:,i] = f(ct_target)
-
 marker_array = np.array(['^', 's', 'o', '*']) 
 plt.close("all")
 plt.figure(1,figsize=(6,2.75)) 
@@ -72,4 +51,4 @@ plt.xlim([7.5,10])
 plt.grid()
 plt.subplots_adjust(left=0.15, bottom=0.25, right=0.95, top=0.8, wspace=0.1, hspace=0.15)
 #%% Save figure
-plt.savefig('Figures/fig8.png',dpi=300)
+# plt.savefig('Figures/fig8.png',dpi=300)

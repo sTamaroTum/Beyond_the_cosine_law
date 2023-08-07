@@ -1,23 +1,6 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Aug  2 10:41:49 2023
-
-@author: saimon
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
-
 plt.close("all")
-plt.rc( 'text', usetex=True ) 
-plt.rc('font',family = 'sans-serif',  size=18)
-plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "serif",
-    "font.serif": ["Helvetica"],
-})
-
 #%% Define constants
 hub_height = 110
 R          = 65
@@ -47,4 +30,4 @@ plt.xticks(np.linspace(0.7,1.2,6),fontsize=18)
 plt.gca().invert_yaxis()
 plt.tight_layout()
 #%% Save figure
-plt.savefig('Figures/fig6.png',dpi=300)
+# plt.savefig('Figures/fig6.png',dpi=300)
