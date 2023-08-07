@@ -7,13 +7,6 @@ warnings.filterwarnings("ignore", category=RuntimeWarning)
 from scipy.io import loadmat
 import matplotlib.pyplot as plt
 plt.close("all")
-plt.rc( 'text', usetex=True ) 
-plt.rc('font',family = 'sans-serif',  size=18)
-plt.rcParams.update({
-    "text.usetex": True,
-    "font.family": "serif",
-    "font.serif": ["Helvetica"],
-})
 # Define function to get power and thrust from wind farm through modified floris
 def get_ct_power(x,yaw,wind_direction,nD):
     
@@ -133,19 +126,16 @@ plt.grid()
 plt.xlim([-30,30])
 plt.xticks([-30,-15,0,15,30],color='w')
 plt.text(24,8.3,'(a)')
-#
 plt.subplot(2,2,2)
 plt.plot(gamma_array2,pitch_standard_control[idx],'-',label='Model')
 plt.plot(gamma_array2,x_trust_constr[idx,1],'--',label='Model')
 plt.ylabel(r'$\theta_p$ [deg]')
 plt.ylim([0,1.5])
 plt.yticks([0,0.5,1,1.5])
-#
 plt.grid()
 plt.xlim([-30,30])
 plt.xticks([-30,-15,0,15,30],color='w')
 plt.text(23,1.2,'(b)')
-#
 plt.subplot(2,2,3)
 plt.plot(gamma_array2,(i_ct[idx,0]/(i_ct_standard_control[idx])-1)*100,':k',label='Model')
 plt.ylabel(r'$\Delta T$ [\%]')
@@ -155,7 +145,6 @@ plt.xlim([-30,30])
 plt.xticks([-30,-15,0,15,30])
 plt.xlabel(r'$\gamma$ [$^\circ$]')
 plt.text(24,16,'(c)')
-#
 plt.subplot(2,2,4)
 plt.plot(gamma_array2,(i_pow[idx,0]/(-wf_pow_standard_control[idx])-1)*100,':k',label='Model')
 plt.ylim([0,4])
@@ -165,7 +154,6 @@ plt.xlim([-30,30])
 plt.xticks([-30,-15,0,15,30])
 plt.xlabel(r'$\gamma$ [$^\circ$]')
 plt.text(23,3.25,'(d)')
-#
 plt.subplots_adjust(left=0.1, bottom=0.2, right=0.95, top=0.85, wspace=0.3, hspace=0.3)
 #%% Save figure
-plt.savefig('../Figures/fig14.png',dpi=300)
+# plt.savefig('../Figures/fig14.png',dpi=300)
