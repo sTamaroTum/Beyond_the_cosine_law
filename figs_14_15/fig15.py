@@ -1,11 +1,3 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Mon Aug  7 11:30:51 2023
-
-@author: saimon
-"""
-
 #%%
 import numpy as np
 import matplotlib.pyplot as plt
@@ -31,43 +23,24 @@ def get_ct_power(x,wind_direction,nD):
     turb_type = fi.floris.farm.turbine_type[0]
     turb_type_derated = []
     
-    turb_type["tsr"] = x[0]
-    turb_type["theta"] = x[1]
+    turb_type["tsr"]          = x[0]
+    turb_type["theta"]        = x[1]
     turb_type["turbine_type"] = 'WT0'
     turb_type_derated.append(turb_type.copy())
     
-    turb_type["tsr"] = 8.20949995#x[3]
-    turb_type["theta"] = 1.08500285#x[4]
+    turb_type["tsr"]          = 8.20949995#x[3]
+    turb_type["theta"]        = 1.08500285#x[4]
     turb_type["turbine_type"] = 'WT1'
     turb_type_derated.append(turb_type.copy())
     
     fi.reinitialize(turbine_type=turb_type_derated)
-    
-    yaw_angles = np.zeros((1,1,2))
+    yaw_angles        = np.zeros((1,1,2))
     yaw_angles[0,0,:] = np.array([x[2],0])
-    
-    fi.calculate_wake(yaw_angles=yaw_angles)
-    
+    fi.calculate_wake(yaw_angles=yaw_angles)    
     thrust_coeff  = fi.get_turbine_Cts()
     p=np.array(fi.get_turbine_powers()) 
 
     return thrust_coeff, p
-
-#%% Load useful C_P - C_T lookup tables for IEA 3 MW wind turbine
-from scipy.io import loadmat
-data = loadmat('curve_originale/Cp_335.mat')
-cp = np.squeeze(data['num'])
-data = loadmat('curve_originale/Ct_335.mat')
-ct = np.squeeze(data['num'])
-data = loadmat('curve_originale/pitch_335.mat')
-pitch = np.squeeze(data['num'])
-data = loadmat('curve_originale/TSR_335.mat')
-tsr = np.squeeze(data['num'])
-data = loadmat('curve_originale/U_335.mat')
-u = np.squeeze(data['num'])
-del data
-from scipy.interpolate import RegularGridInterpolator as rgi
-interopolation_1 = rgi((u,tsr,pitch), ct,method='cubic')
 
 #%% Load results of optimization with modified floris
 nD = 5
@@ -178,19 +151,19 @@ for i in np.arange(6):
     plt.xlim([250,290])
 #%% Add LES results
 from scipy.io import loadmat
-data = loadmat('curve_originale/Cp_335.mat')
+data = loadmat('cp_ct_tables_iea_3mw/Cp_335.mat')
 cp = np.squeeze(data['num'])
-data = loadmat('curve_originale/Ct_335.mat')
+data = loadmat('cp_ct_tables_iea_3mw/Ct_335.mat')
 ct = np.squeeze(data['num'])
-data = loadmat('curve_originale/pitch_335.mat')
+data = loadmat('cp_ct_tables_iea_3mw/pitch_335.mat')
 pitch = np.squeeze(data['num'])
-data = loadmat('curve_originale/TSR_335.mat')
+data = loadmat('cp_ct_tables_iea_3mw/TSR_335.mat')
 tsr = np.squeeze(data['num'])
-data = loadmat('curve_originale/U_335.mat')
+data = loadmat('cp_ct_tables_iea_3mw/U_335.mat')
 u = np.squeeze(data['num'])
 del data
 from scipy.interpolate import RegularGridInterpolator as rgi
-interopolation_1 = rgi((u,tsr,pitch), cp*0.9175980513708618,method='cubic')
+interopolation_1 = rgi((u,tsr,pitch), cp*0.9175980513708618,method='linear')
 
 ### UPSTREAM
 THR = np.load('LES_OPT/res2/THR.npy')
