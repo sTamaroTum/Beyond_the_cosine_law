@@ -179,15 +179,19 @@ def power(velocitiesINPUT,yaw_angle,cl_alfa,cd,beta,theta_in,sigma,R,delta,tsr,r
     
     from scipy.optimize import fsolve
     
-    def find_ct(x,*data):
+    def get_ct(x,*data):
         sigma,cd,cl_alfa,gamma,delta,k,cosMu,sinMu,tsr,theta,R,MU = data
         CD = np.cos(np.deg2rad(delta))
         CG = np.cos(np.deg2rad(gamma))
         SD = np.sin(np.deg2rad(delta))
         SG = np.sin(np.deg2rad(gamma))
         a  = (1- ( (1+np.sqrt(1-x-1/16*x**2*sinMu**2))/(2*(1+1/16*x*sinMu**2))) )
-        I1 = -(cosMu*(tsr - CD*SG*k)*(a - 1))/2;
-        I2 = (np.pi*sinMu**2 + (np.pi*(CD**2*CG**2*SD**2*k**2 + 3*CD**2*SG**2*k**2 - 8*CD*tsr*SG*k + 8*tsr**2))/12)/(2*np.pi);
+        k_1s = -1*(15*np.pi/32*np.tan((MU+np.sin(MU)*(x/2))/2));
+        I1 = -(np.pi*cosMu*(tsr - CD*SG*k)*(a - 1) 
+               + (CD*CG*cosMu*k_1s*SD*a*k*np.pi*(2*tsr - CD*SG*k))/(8*sinMu))/(2*np.pi)
+        I2 = (np.pi*sinMu**2 + (np.pi*(CD**2*CG**2*SD**2*k**2 
+                                       + 3*CD**2*SG**2*k**2 - 8*CD*tsr*SG*k 
+                                       + 8*tsr**2))/12)/(2*np.pi)
 
         return (sigma*(cd+cl_alfa)*(I1) - sigma*cl_alfa*theta*(I2)) - x
 
@@ -198,7 +202,7 @@ def power(velocitiesINPUT,yaw_angle,cl_alfa,cd,beta,theta_in,sigma,R,delta,tsr,r
     if tsr.size > 1:
         for i in np.arange(2):
             data = (sigma,cd,cl_alfa,gamma[i],delta,shear,cosMu[i],sinMu[i],(tsr[i]),(theta[i]),R,MU[i])
-            ct, info, ier, msg = fsolve(find_ct, x0,args=data,full_output=True)    
+            ct, info, ier, msg = fsolve(get_ct, x0,args=data,full_output=True)    
             if ier == 1:
                 a  = 1-((1+np.sqrt(1-ct-1/16*sinMu[i]**2*ct**2))/(2*(1+1/16*ct*sinMu[i]**2)))
                 
@@ -207,31 +211,50 @@ def power(velocitiesINPUT,yaw_angle,cl_alfa,cd,beta,theta_in,sigma,R,delta,tsr,r
                 SD = np.sin(np.deg2rad(delta))  
                 CD = np.cos(np.deg2rad(delta))  
 
+                k_1s = -1*(15*np.pi/32*np.tan((MU[i]+np.sin(MU[i])*(ct/2))/2));
+                
                 P1 = sigma*((np.pi*cosMu[i]**2*tsr[i]*cl_alfa*(a - 1)**2 
                              - (tsr[i]*cd*np.pi*(CD**2*CG**2*SD**2*shear**2 + 3*CD**2*SG**2*shear**2 - 8*CD*tsr[i]*SG*shear + 8*tsr[i]**2))/16 
-                             - (np.pi*tsr[i]*sinMu[i]**2*cd)/2 + (2*np.pi*cosMu[i]*tsr[i]**2*cl_alfa*theta[i]*(a - 1))/3 
-                             + (2*np.pi*CD*cosMu[i]*tsr[i]*SG*cl_alfa*shear*theta[i])/3 
+                             - (np.pi*tsr[i]*sinMu[i]**2*cd)/2 - (2*np.pi*cosMu[i]*tsr[i]**2*cl_alfa*theta[i])/3 
+                             + (np.pi*cosMu[i]**2*k_1s**2*tsr[i]*a**2*cl_alfa)/4 
+                             + (2*np.pi*cosMu[i]*tsr[i]**2*a*cl_alfa*theta[i])/3 + (2*np.pi*CD*cosMu[i]*tsr[i]*SG*cl_alfa*shear*theta[i])/3 
                              + (CD**2*cosMu[i]**2*tsr[i]*cl_alfa*shear**2*np.pi*(a - 1)**2*(CG**2*SD**2 + SG**2))/(4*sinMu[i]**2) 
-                             - (2*np.pi*CD*cosMu[i]*tsr[i]*SG*a*cl_alfa*shear*theta[i])/3)/(2*np.pi))    
+                             - (2*np.pi*CD*cosMu[i]*tsr[i]*SG*a*cl_alfa*shear*theta[i])/3 
+                             + (CD**2*cosMu[i]**2*k_1s**2*tsr[i]*a**2*cl_alfa*shear**2*np.pi*(3*CG**2*SD**2 + SG**2))/(24*sinMu[i]**2) 
+                             - (np.pi*CD*CG*cosMu[i]**2*k_1s*tsr[i]*SD*a*cl_alfa*shear)/sinMu[i] 
+                             + (np.pi*CD*CG*cosMu[i]**2*k_1s*tsr[i]*SD*a**2*cl_alfa*shear)/sinMu[i] 
+                             + (np.pi*CD*CG*cosMu[i]*k_1s*tsr[i]**2*SD*a*cl_alfa*shear*theta[i])/(5*sinMu[i]) 
+                             - (np.pi*CD**2*CG*cosMu[i]*k_1s*tsr[i]*SD*SG*a*cl_alfa*shear**2*theta[i])/(10*sinMu[i]))/(2*np.pi))
+
                 p[i] = P1                                               
             else:
                 p[i] = -1e3
 
     else:
         data = (sigma,cd,cl_alfa,np.squeeze(gamma),delta,shear,cosMu,sinMu,(tsr),(theta),R)
-        ct, info, ier = fsolve(find_ct, x0,args=data)
+        ct, info, ier = fsolve(get_ct, x0,args=data)
         if ier == 1:
             a = 1-((1+np.sqrt(1-ct-1/16*sinMu**2*ct**2))/(2*(1+1/16*ct*sinMu**2)))
             SG = np.sin(np.deg2rad(gamma))
             CG = np.cos(np.deg2rad(gamma))                
             SD = np.sin(np.deg2rad(delta))  
             CD = np.cos(np.deg2rad(delta))  
+            k_1s = -1*(15*np.pi/32*np.tan((MU+np.sin(MU)*(ct/2))/2));
+
             p = sigma*((np.pi*cosMu**2*tsr*cl_alfa*(a - 1)**2 
                          - (tsr*cd*np.pi*(CD**2*CG**2*SD**2*shear**2 + 3*CD**2*SG**2*shear**2 - 8*CD*tsr*SG*shear + 8*tsr**2))/16 
-                         - (np.pi*tsr*sinMu**2*cd)/2 + (2*np.pi*cosMu*tsr**2*cl_alfa*theta*(a - 1))/3 
-                         + (2*np.pi*CD*cosMu*tsr*SG*cl_alfa*shear*theta)/3 
+                         - (np.pi*tsr*sinMu**2*cd)/2 - (2*np.pi*cosMu*tsr**2*cl_alfa*theta)/3 
+                         + (np.pi*cosMu**2*k_1s**2*tsr*a**2*cl_alfa)/4 
+                         + (2*np.pi*cosMu*tsr**2*a*cl_alfa*theta)/3 + (2*np.pi*CD*cosMu*tsr*SG*cl_alfa*shear*theta)/3 
                          + (CD**2*cosMu**2*tsr*cl_alfa*shear**2*np.pi*(a - 1)**2*(CG**2*SD**2 + SG**2))/(4*sinMu**2) 
-                         - (2*np.pi*CD*cosMu*tsr*SG*a*cl_alfa*shear*theta)/3)/(2*np.pi))
+                         - (2*np.pi*CD*cosMu*tsr*SG*a*cl_alfa*shear*theta)/3 
+                         + (CD**2*cosMu**2*k_1s**2*tsr*a**2*cl_alfa*shear**2*np.pi*(3*CG**2*SD**2 + SG**2))/(24*sinMu**2) 
+                         - (np.pi*CD*CG*cosMu**2*k_1s*tsr*SD*a*cl_alfa*shear)/sinMu 
+                         + (np.pi*CD*CG*cosMu**2*k_1s*tsr*SD*a**2*cl_alfa*shear)/sinMu 
+                         + (np.pi*CD*CG*cosMu*k_1s*tsr**2*SD*a*cl_alfa*shear*theta)/(5*sinMu) 
+                         - (np.pi*CD**2*CG*cosMu*k_1s*tsr*SD*SG*a*cl_alfa*shear**2*theta)/(10*sinMu))/(2*np.pi))
+            
+            
             
         else:
             p = -1e3
@@ -263,7 +286,7 @@ def power(velocitiesINPUT,yaw_angle,cl_alfa,cd,beta,theta_in,sigma,R,delta,tsr,r
     if tsr.size > 1:
         for i in np.arange(2):
             data = (sigma,cd,cl_alfa,gamma[i],delta,shear,cosMu[i],sinMu[i],(tsr[i]),(theta[i]),R,MU[i])
-            ct, info, ier, msg = fsolve(find_ct, x0,args=data,full_output=True)    
+            ct, info, ier, msg = fsolve(get_ct, x0,args=data,full_output=True)    
             if ier == 1:
                 a = 1-((1+np.sqrt(1-ct-1/16*sinMu[i]**2*ct**2))/(2*(1+1/16*ct*sinMu[i]**2)))
                 SG = np.sin(np.deg2rad(gamma[i]))
@@ -273,10 +296,16 @@ def power(velocitiesINPUT,yaw_angle,cl_alfa,cd,beta,theta_in,sigma,R,delta,tsr,r
 
                 P1 = sigma*((np.pi*cosMu[i]**2*tsr[i]*cl_alfa*(a - 1)**2 
                              - (tsr[i]*cd*np.pi*(CD**2*CG**2*SD**2*shear**2 + 3*CD**2*SG**2*shear**2 - 8*CD*tsr[i]*SG*shear + 8*tsr[i]**2))/16 
-                             - (np.pi*tsr[i]*sinMu[i]**2*cd)/2 + (2*np.pi*cosMu[i]*tsr[i]**2*cl_alfa*theta[i]*(a - 1))/3 
-                             + (2*np.pi*CD*cosMu[i]*tsr[i]*SG*cl_alfa*shear*theta[i])/3 
+                             - (np.pi*tsr[i]*sinMu[i]**2*cd)/2 - (2*np.pi*cosMu[i]*tsr[i]**2*cl_alfa*theta[i])/3 
+                             + (np.pi*cosMu[i]**2*k_1s**2*tsr[i]*a**2*cl_alfa)/4 
+                             + (2*np.pi*cosMu[i]*tsr[i]**2*a*cl_alfa*theta[i])/3 + (2*np.pi*CD*cosMu[i]*tsr[i]*SG*cl_alfa*shear*theta[i])/3 
                              + (CD**2*cosMu[i]**2*tsr[i]*cl_alfa*shear**2*np.pi*(a - 1)**2*(CG**2*SD**2 + SG**2))/(4*sinMu[i]**2) 
-                             - (2*np.pi*CD*cosMu[i]*tsr[i]*SG*a*cl_alfa*shear*theta[i])/3)/(2*np.pi))
+                             - (2*np.pi*CD*cosMu[i]*tsr[i]*SG*a*cl_alfa*shear*theta[i])/3 
+                             + (CD**2*cosMu[i]**2*k_1s**2*tsr[i]*a**2*cl_alfa*shear**2*np.pi*(3*CG**2*SD**2 + SG**2))/(24*sinMu[i]**2) 
+                             - (np.pi*CD*CG*cosMu[i]**2*k_1s*tsr[i]*SD*a*cl_alfa*shear)/sinMu[i] 
+                             + (np.pi*CD*CG*cosMu[i]**2*k_1s*tsr[i]*SD*a**2*cl_alfa*shear)/sinMu[i] 
+                             + (np.pi*CD*CG*cosMu[i]*k_1s*tsr[i]**2*SD*a*cl_alfa*shear*theta[i])/(5*sinMu[i]) 
+                             - (np.pi*CD**2*CG*cosMu[i]*k_1s*tsr[i]*SD*SG*a*cl_alfa*shear**2*theta[i])/(10*sinMu[i]))/(2*np.pi))
                                                  
                 p0[i] = P1                                                  
             else:
@@ -284,7 +313,7 @@ def power(velocitiesINPUT,yaw_angle,cl_alfa,cd,beta,theta_in,sigma,R,delta,tsr,r
 
     else:
         data = (sigma,cd,cl_alfa,np.squeeze(gamma),delta,cosMu,sinMu,(tsr),(theta),R)
-        ct, info, ier = fsolve(find_ct, x0,args=data)
+        ct, info, ier = fsolve(get_ct, x0,args=data)
         if ier == 1:
             a = 1-((1+np.sqrt(1-ct-1/16*sinMu**2*ct**2))/(2*(1+1/16*ct*sinMu**2)))
             SG = np.sin(np.deg2rad(gamma))
@@ -292,12 +321,20 @@ def power(velocitiesINPUT,yaw_angle,cl_alfa,cd,beta,theta_in,sigma,R,delta,tsr,r
             SD = np.sin(np.deg2rad(delta))  
             CD = np.cos(np.deg2rad(delta))  
             
-            p0 = sigma*((np.pi*cosMu**2*tsr*cl_alfa*(a - 1)**2 
+            k_1s = -1*(15*np.pi/32*np.tan((MU+np.sin(MU)*(ct/2))/2));
+
+            p = sigma*((np.pi*cosMu**2*tsr*cl_alfa*(a - 1)**2 
                          - (tsr*cd*np.pi*(CD**2*CG**2*SD**2*shear**2 + 3*CD**2*SG**2*shear**2 - 8*CD*tsr*SG*shear + 8*tsr**2))/16 
-                         - (np.pi*tsr*sinMu**2*cd)/2 + (2*np.pi*cosMu*tsr**2*cl_alfa*theta*(a - 1))/3 
-                         + (2*np.pi*CD*cosMu*tsr*SG*cl_alfa*shear*theta)/3 
+                         - (np.pi*tsr*sinMu**2*cd)/2 - (2*np.pi*cosMu*tsr**2*cl_alfa*theta)/3 
+                         + (np.pi*cosMu**2*k_1s**2*tsr*a**2*cl_alfa)/4 
+                         + (2*np.pi*cosMu*tsr**2*a*cl_alfa*theta)/3 + (2*np.pi*CD*cosMu*tsr*SG*cl_alfa*shear*theta)/3 
                          + (CD**2*cosMu**2*tsr*cl_alfa*shear**2*np.pi*(a - 1)**2*(CG**2*SD**2 + SG**2))/(4*sinMu**2) 
-                         - (2*np.pi*CD*cosMu*tsr*SG*a*cl_alfa*shear*theta)/3)/(2*np.pi))
+                         - (2*np.pi*CD*cosMu*tsr*SG*a*cl_alfa*shear*theta)/3 
+                         + (CD**2*cosMu**2*k_1s**2*tsr*a**2*cl_alfa*shear**2*np.pi*(3*CG**2*SD**2 + SG**2))/(24*sinMu**2) 
+                         - (np.pi*CD*CG*cosMu**2*k_1s*tsr*SD*a*cl_alfa*shear)/sinMu 
+                         + (np.pi*CD*CG*cosMu**2*k_1s*tsr*SD*a**2*cl_alfa*shear)/sinMu 
+                         + (np.pi*CD*CG*cosMu*k_1s*tsr**2*SD*a*cl_alfa*shear*theta)/(5*sinMu) 
+                         - (np.pi*CD**2*CG*cosMu*k_1s*tsr*SD*SG*a*cl_alfa*shear**2*theta)/(10*sinMu))/(2*np.pi))
             
         else:
             p0 = 1
@@ -466,7 +503,7 @@ def Ct(velocitiesINPUT,yaw_angle,cl_alfa,cd,beta,k,theta_in,sigma,R,delta,tsr,ix
 
     from scipy.optimize import fsolve
     
-    def find_ct(x,*data):
+    def get_ct(x,*data):
         sigma,cd,cl_alfa,gamma,delta,k,cosMu,sinMu,tsr,theta,R,MU = data
         CD = np.cos(np.deg2rad(delta))
         CG = np.cos(np.deg2rad(gamma))
@@ -474,9 +511,12 @@ def Ct(velocitiesINPUT,yaw_angle,cl_alfa,cd,beta,k,theta_in,sigma,R,delta,tsr,ix
         SG = np.sin(np.deg2rad(gamma))
 
         a = (1- ( (1+np.sqrt(1-x-1/16*x**2*sinMu**2))/(2*(1+1/16*x*sinMu**2))) )
-
-        I1 = -(cosMu*(tsr - CD*SG*k)*(a - 1))/2;
-        I2 = (np.pi*sinMu**2 + (np.pi*(CD**2*CG**2*SD**2*k**2 + 3*CD**2*SG**2*k**2 - 8*CD*tsr*SG*k + 8*tsr**2))/12)/(2*np.pi);
+        k_1s = -1*(15*np.pi/32*np.tan((MU+np.sin(MU)*(x/2))/2));
+        I1 = -(np.pi*cosMu*(tsr - CD*SG*k)*(a - 1) 
+               + (CD*CG*cosMu*k_1s*SD*a*k*np.pi*(2*tsr - CD*SG*k))/(8*sinMu))/(2*np.pi)
+        I2 = (np.pi*sinMu**2 + (np.pi*(CD**2*CG**2*SD**2*k**2 
+                                       + 3*CD**2*SG**2*k**2 - 8*CD*tsr*SG*k 
+                                       + 8*tsr**2))/12)/(2*np.pi)
 
         return (sigma*(cd+cl_alfa)*(I1) - sigma*cl_alfa*theta*(I2)) - x
 
@@ -489,11 +529,11 @@ def Ct(velocitiesINPUT,yaw_angle,cl_alfa,cd,beta,k,theta_in,sigma,R,delta,tsr,ix
     if tsr.size > 1:
         for i in np.arange(2):
             data = (sigma,cd,cl_alfa,np.squeeze(gamma[i]),delta,k,cosMu[i],sinMu[i],(tsr[i]),(theta[i]),R,MU[i])
-            ct = fsolve(find_ct, x0,args=data)            
+            ct = fsolve(get_ct, x0,args=data)            
             thrust_coefficient1[i] = np.clip(ct, 0.0001, 0.9999)
     else:
         data = (sigma,cd,cl_alfa,np.squeeze(gamma),delta,k,cosMu,sinMu,(tsr),(theta),R,MU)
-        ct = fsolve(find_ct, x0,args=data)
+        ct = fsolve(get_ct, x0,args=data)
         thrust_coefficient1 = np.clip(ct, 0.0001, 0.9999)
     
 
@@ -526,11 +566,11 @@ def Ct(velocitiesINPUT,yaw_angle,cl_alfa,cd,beta,k,theta_in,sigma,R,delta,tsr,ix
     if tsr.size > 1:
         for i in np.arange(2):
             data = (sigma,cd,cl_alfa,np.squeeze(gamma[i]),delta,k,cosMu[i],sinMu[i],(tsr[i]),(theta[i]),R,MU[i])
-            ct = fsolve(find_ct, x0,args=data)            
+            ct = fsolve(get_ct, x0,args=data)            
             thrust_coefficient0[i] = ct #np.clip(ct, 0.0001, 0.9999)
     else:
         data = (sigma,cd,cl_alfa,np.squeeze(gamma),delta,k,cosMu,sinMu,(tsr),(theta),R,MU)
-        ct = fsolve(find_ct, x0,args=data)
+        ct = fsolve(get_ct, x0,args=data)
         thrust_coefficient0 = ct #np.clip(ct, 0.0001, 0.9999)
     
 ############################################################################  
@@ -588,7 +628,7 @@ def axial_induction(velocities,yaw_angle,cl_alfa,cd,beta,k,theta,sigma,R,delta,t
 
     from scipy.optimize import fsolve
     
-    def find_ct(x,*data):
+    def get_ct(x,*data):
         sigma,cd,cl_alfa,gamma,delta,k,cosMu,sinMu,tsr,theta,R,MU = data
         CD = np.cos(np.deg2rad(delta))
         CG = np.cos(np.deg2rad(gamma))
@@ -596,9 +636,12 @@ def axial_induction(velocities,yaw_angle,cl_alfa,cd,beta,k,theta,sigma,R,delta,t
         SG = np.sin(np.deg2rad(gamma))
 
         a = (1- ( (1+np.sqrt(1-x-1/16*x**2*sinMu**2))/(2*(1+1/16*x*sinMu**2))) )
-
-        I1 = -(cosMu*(tsr - CD*SG*k)*(a - 1))/2;
-        I2 = (np.pi*sinMu**2 + (np.pi*(CD**2*CG**2*SD**2*k**2 + 3*CD**2*SG**2*k**2 - 8*CD*tsr*SG*k + 8*tsr**2))/12)/(2*np.pi);
+        k_1s = -1*(15*np.pi/32*np.tan((MU+np.sin(MU)*(x/2))/2));
+        I1 = -(np.pi*cosMu*(tsr - CD*SG*k)*(a - 1) 
+               + (CD*CG*cosMu*k_1s*SD*a*k*np.pi*(2*tsr - CD*SG*k))/(8*sinMu))/(2*np.pi)
+        I2 = (np.pi*sinMu**2 + (np.pi*(CD**2*CG**2*SD**2*k**2 
+                                       + 3*CD**2*SG**2*k**2 - 8*CD*tsr*SG*k 
+                                       + 8*tsr**2))/12)/(2*np.pi)
 
         return (sigma*(cd+cl_alfa)*(I1) - sigma*cl_alfa*theta*(I2)) - x
 
@@ -609,10 +652,10 @@ def axial_induction(velocities,yaw_angle,cl_alfa,cd,beta,k,theta,sigma,R,delta,t
     if tsr.size > 1:
         for i in np.arange(2):
             data = (sigma,cd,cl_alfa,np.squeeze(gamma[i]),delta,k,cosMu[i],sinMu[i],(tsr[i]),(theta[i]),R,MU[i])
-            ct[i] = fsolve(find_ct, x0,args=data)            
+            ct[i] = fsolve(get_ct, x0,args=data)            
     else:
         data = (sigma,cd,cl_alfa,np.squeeze(gamma),delta,k,cosMu,sinMu,(tsr),(theta),R,MU)
-        ct = fsolve(find_ct, x0,args=data)
+        ct = fsolve(get_ct, x0,args=data)
     
     a = 1-((1+np.sqrt(1-ct-1/16*sinMu**2*ct**2))/(2*(1+1/16*ct*sinMu**2)))
     return a
