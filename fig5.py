@@ -13,7 +13,7 @@ def find_ct(x,*data):
     SD = np.sin(np.deg2rad(delta))
     SG = np.sin(np.deg2rad(gamma))
     a = (1- ( (1+np.sqrt(1-x-1/16*x**2*sinMu**2))/(2*(1+1/16*x*sinMu**2))) )    
-    k_1s = -1*(15*np.pi/32*np.tan((mu+np.cos(mu)**2*np.sin(mu)*(x/2))/2));
+    k_1s = -1*(15*np.pi/32*np.tan((mu+np.sin(mu)*(x/2))/2));
     I1 = -(np.pi*cosMu*(tsr - CD*SG*k)*(a - 1) 
            + (CD*CG*cosMu*k_1s*SD*a*k*np.pi*(2*tsr - CD*SG*k))/(8*sinMu))/(2*np.pi)
     I2 = (np.pi*sinMu**2 + (np.pi*(CD**2*CG**2*SD**2*k**2 
@@ -27,7 +27,7 @@ def find_cp(sigma,cd,cl_alfa,gamma,delta,k,cosMu,sinMu,tsr,theta,ct,mu):
     CG = np.cos(np.deg2rad(gamma))                
     SD = np.sin(np.deg2rad(delta))  
     CD = np.cos(np.deg2rad(delta))  
-    k_1s = -1*(15*np.pi/32*np.tan((mu+np.cos(mu)**2*np.sin(mu)*(ct/2))/2));
+    k_1s = -1*(15*np.pi/32*np.tan((mu+np.sin(mu)*(ct/2))/2));
     
     cp = sigma*((np.pi*cosMu**2*tsr*cl_alfa*(a - 1)**2 
                  - (tsr*cd*np.pi*(CD**2*CG**2*SD**2*k**2 + 3*CD**2*SG**2*k**2 - 8*CD*tsr*SG*k + 8*tsr**2))/16 
