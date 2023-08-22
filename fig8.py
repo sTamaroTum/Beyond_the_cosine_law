@@ -2,7 +2,6 @@ import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
 from scipy import interpolate
-
 plt.close("all")
 #%% Load LES data
 files = ['num_data/tsr8/tsr_8_rigid.mat','num_data/tsr9_5/tsr_9_5_rigid.mat','num_data/shear01/shear_01_rigid.mat']

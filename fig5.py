@@ -7,30 +7,41 @@ colors = np.array([[0,0,0],[0.4,0.4,0.4],[0.7,0.7,0.7]])
 style  = np.array(["-",":"])
 #%% Define function to compute C_T
 def find_ct(x,*data):
-    sigma,cd,cl_alfa,gamma,delta,k,cosMu,sinMu,tsr,theta = data
+    sigma,cd,cl_alfa,gamma,delta,k,cosMu,sinMu,tsr,theta,mu = data
     CD = np.cos(np.deg2rad(delta))
     CG = np.cos(np.deg2rad(gamma))
     SD = np.sin(np.deg2rad(delta))
     SG = np.sin(np.deg2rad(gamma))
-    a = (1- ( (1+np.sqrt(1-x-1/16*x**2*sinMu**2))/(2*(1+1/16*x*sinMu**2))) )
-    I1 = -(cosMu*(tsr - CD*SG*k)*(a - 1))/2
+    a = (1- ( (1+np.sqrt(1-x-1/16*x**2*sinMu**2))/(2*(1+1/16*x*sinMu**2))) )    
+    k_1s = -1*(15*np.pi/32*np.tan((mu+np.cos(mu)**2*np.sin(mu)*(x/2))/2));
+    I1 = -(np.pi*cosMu*(tsr - CD*SG*k)*(a - 1) 
+           + (CD*CG*cosMu*k_1s*SD*a*k*np.pi*(2*tsr - CD*SG*k))/(8*sinMu))/(2*np.pi)
     I2 = (np.pi*sinMu**2 + (np.pi*(CD**2*CG**2*SD**2*k**2 
                                    + 3*CD**2*SG**2*k**2 - 8*CD*tsr*SG*k 
                                    + 8*tsr**2))/12)/(2*np.pi)
     return (sigma*(cd+cl_alfa)*(I1) - sigma*cl_alfa*theta*(I2)) - x
 # Define function to compute C_P
-def find_cp(sigma,cd,cl_alfa,gamma,delta,k,cosMu,sinMu,tsr,theta,ct):
+def find_cp(sigma,cd,cl_alfa,gamma,delta,k,cosMu,sinMu,tsr,theta,ct,mu):
     a = 1-((1+np.sqrt(1-ct-1/16*sinMu**2*ct**2))/(2*(1+1/16*ct*sinMu**2)))
     SG = np.sin(np.deg2rad(gamma))
     CG = np.cos(np.deg2rad(gamma))                
     SD = np.sin(np.deg2rad(delta))  
     CD = np.cos(np.deg2rad(delta))  
+    k_1s = -1*(15*np.pi/32*np.tan((mu+np.cos(mu)**2*np.sin(mu)*(ct/2))/2));
+    
     cp = sigma*((np.pi*cosMu**2*tsr*cl_alfa*(a - 1)**2 
                  - (tsr*cd*np.pi*(CD**2*CG**2*SD**2*k**2 + 3*CD**2*SG**2*k**2 - 8*CD*tsr*SG*k + 8*tsr**2))/16 
-                 - (np.pi*tsr*sinMu**2*cd)/2 + (2*np.pi*cosMu*tsr**2*cl_alfa*theta*(a - 1))/3 
-                 + (2*np.pi*CD*cosMu*tsr*SG*cl_alfa*k*theta)/3 
+                 - (np.pi*tsr*sinMu**2*cd)/2 - (2*np.pi*cosMu*tsr**2*cl_alfa*theta)/3 
+                 + (np.pi*cosMu**2*k_1s**2*tsr*a**2*cl_alfa)/4 
+                 + (2*np.pi*cosMu*tsr**2*a*cl_alfa*theta)/3 + (2*np.pi*CD*cosMu*tsr*SG*cl_alfa*k*theta)/3 
                  + (CD**2*cosMu**2*tsr*cl_alfa*k**2*np.pi*(a - 1)**2*(CG**2*SD**2 + SG**2))/(4*sinMu**2) 
-                 - (2*np.pi*CD*cosMu*tsr*SG*a*cl_alfa*k*theta)/3)/(2*np.pi))
+                 - (2*np.pi*CD*cosMu*tsr*SG*a*cl_alfa*k*theta)/3 
+                 + (CD**2*cosMu**2*k_1s**2*tsr*a**2*cl_alfa*k**2*np.pi*(3*CG**2*SD**2 + SG**2))/(24*sinMu**2) 
+                 - (np.pi*CD*CG*cosMu**2*k_1s*tsr*SD*a*cl_alfa*k)/sinMu 
+                 + (np.pi*CD*CG*cosMu**2*k_1s*tsr*SD*a**2*cl_alfa*k)/sinMu 
+                 + (np.pi*CD*CG*cosMu*k_1s*tsr**2*SD*a*cl_alfa*k*theta)/(5*sinMu) 
+                 - (np.pi*CD**2*CG*cosMu*k_1s*tsr*SD*SG*a*cl_alfa*k**2*theta)/(10*sinMu))/(2*np.pi))
+    
     return cp
 #%% Load variables
 sigma           = 0.0416                        # rotor solidity        [-]
@@ -57,14 +68,14 @@ for k in k_arr:
         for gamma in gamma_array:
           # define total misalignment angle mu               
           mu = np.arccos(np.cos(np.deg2rad(gamma))*np.cos(np.deg2rad(delta)))
-          data = (sigma,cd,c_l_alpha,gamma,delta,k,np.cos(mu),np.sin(mu),tsr,theta)
+          data = (sigma,cd,c_l_alpha,gamma,delta,k,np.cos(mu),np.sin(mu),tsr,theta,mu)
           ct[ccc] = fsolve(find_ct, x0,args=data)
           # get C_P
-          cp[ccc] = find_cp(sigma,cd,c_l_alpha,gamma,delta,k,np.cos(mu),np.sin(mu),tsr,theta,ct[ccc])
+          cp[ccc] = find_cp(sigma,cd,c_l_alpha,gamma,delta,k,np.cos(mu),np.sin(mu),tsr,theta,ct[ccc],mu)
           ccc += 1
         plt.subplot(1,2,1)
         if c == 0:
-            plt.plot(gamma_array,ct/ct[idx0],color=colors[cc,:],linestyle=style[c],label=r'$\theta_p=$' + str(np.rad2deg(theta_p)) + '$^\circ$')
+            plt.plot(gamma_array,ct/ct[idx0],color=colors[cc,:],linestyle=style[c],label=r'$\theta_p=$' + str(np.rad2deg(theta_p)) + '$**\circ$')
         else:
             plt.plot(gamma_array,ct/ct[idx0],color=colors[cc,:],linestyle=style[c])           
         plt.subplot(1,2,2)
@@ -84,7 +95,7 @@ plt.legend(ncol=1,handlelength=1,columnspacing=0.5,frameon=True,fontsize=16)
 letters = np.array(["(a)","(b)"])
 for i in np.arange(2):
     plt.subplot(1,2,i+1)
-    plt.xlabel('$\gamma$ [$^\circ$]',fontsize=16)
+    plt.xlabel('$\gamma$ [$**\circ$]',fontsize=16)
     plt.xlim([-30,30])
     plt.xticks(np.linspace(-30,30,7),fontsize=16)
     plt.ylim([0.6,1.01])

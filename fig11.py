@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
-
 plt.close("all")
 #%% Load data
 x        = loadmat('exp_data/Sulution_opt_7_param.mat')

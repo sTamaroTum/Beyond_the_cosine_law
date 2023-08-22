@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
-
 plt.close("all")
 x = loadmat('exp_data/Inflow_All3.mat')
 from scipy.optimize import curve_fit
@@ -42,7 +41,7 @@ plt.legend(loc='upper center', bbox_to_anchor=(1, 1.375),handlelength=0.75,ncol=
 plt.xlim([0.7,1.2])
 plt.ylim([0.75,-0.75])
 plt.ylabel('$z_g$ [$D$]')
-plt.xlabel(r'$u/u_{\textrm{pitot}}$ [-]')
+plt.xlabel(r'$u/u_{{pitot}}$ [-]')
 plt.grid()
 plt.text(1.15,-0.6,'(a)')
 #%% Plot turbulence intensity

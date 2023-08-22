@@ -1,7 +1,6 @@
 import numpy as np
 import matplotlib.pyplot as plt
 from scipy.io import loadmat
-
 plt.close("all")
 #%% Plot ETA_P
 x = loadmat('exp_data/opt_7_param_INFLOW_ExpNumComparison_power.mat')

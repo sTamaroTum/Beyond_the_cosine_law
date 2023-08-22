@@ -1,48 +1,50 @@
-#!/usr/bin/env python3
-# -*- coding: utf-8 -*-
-"""
-Created on Wed Aug  2 11:20:02 2023
-
-@author: saimon
-"""
-
 import numpy as np
 import matplotlib.pyplot as plt
-
 plt.close("all")
-# Define function to compute C_T
+#%% Define function to compute C_T
 def find_ct(x,*data):
-    sigma,cd,cl_alfa,gamma,delta,k,cosMu,sinMu,tsr,theta = data
+    sigma,cd,cl_alfa,gamma,delta,k,cosMu,sinMu,tsr,theta,mu = data
     CD = np.cos(np.deg2rad(delta))
     CG = np.cos(np.deg2rad(gamma))
     SD = np.sin(np.deg2rad(delta))
     SG = np.sin(np.deg2rad(gamma))
-    a = (1- ( (1+np.sqrt(1-x-1/16*x**2*sinMu**2))/(2*(1+1/16*x*sinMu**2))) )
-    I1 = -(cosMu*(tsr - CD*SG*k)*(a - 1))/2
+    a = (1- ( (1+np.sqrt(1-x-1/16*x**2*sinMu**2))/(2*(1+1/16*x*sinMu**2))) )    
+    k_1s = -1*(15*np.pi/32*np.tan((mu+np.cos(mu)**2*np.sin(mu)*(x/2))/2));
+    I1 = -(np.pi*cosMu*(tsr - CD*SG*k)*(a - 1) 
+           + (CD*CG*cosMu*k_1s*SD*a*k*np.pi*(2*tsr - CD*SG*k))/(8*sinMu))/(2*np.pi)
     I2 = (np.pi*sinMu**2 + (np.pi*(CD**2*CG**2*SD**2*k**2 
                                    + 3*CD**2*SG**2*k**2 - 8*CD*tsr*SG*k 
                                    + 8*tsr**2))/12)/(2*np.pi)
-
     return (sigma*(cd+cl_alfa)*(I1) - sigma*cl_alfa*theta*(I2)) - x
 # Define function to compute C_P
-def find_cp(sigma,cd,cl_alfa,gamma,delta,k,cosMu,sinMu,tsr,theta,ct):
-  a = 1-((1+np.sqrt(1-ct-1/16*sinMu**2*ct**2))/(2*(1+1/16*ct*sinMu**2)))
-  SG = np.sin(np.deg2rad(gamma))
-  CG = np.cos(np.deg2rad(gamma))                
-  SD = np.sin(np.deg2rad(delta))  
-  CD = np.cos(np.deg2rad(delta))  
-  cp = sigma*((np.pi*cosMu**2*tsr*cl_alfa*(a - 1)**2 
-               - (tsr*cd*np.pi*(CD**2*CG**2*SD**2*k**2 + 3*CD**2*SG**2*k**2 - 8*CD*tsr*SG*k + 8*tsr**2))/16 
-               - (np.pi*tsr*sinMu**2*cd)/2 + (2*np.pi*cosMu*tsr**2*cl_alfa*theta*(a - 1))/3 
-               + (2*np.pi*CD*cosMu*tsr*SG*cl_alfa*k*theta)/3 
-               + (CD**2*cosMu**2*tsr*cl_alfa*k**2*np.pi*(a - 1)**2*(CG**2*SD**2 + SG**2))/(4*sinMu**2) 
-               - (2*np.pi*CD*cosMu*tsr*SG*a*cl_alfa*k*theta)/3)/(2*np.pi))
-  return cp
+def find_cp(sigma,cd,cl_alfa,gamma,delta,k,cosMu,sinMu,tsr,theta,ct,mu):
+    a = 1-((1+np.sqrt(1-ct-1/16*sinMu**2*ct**2))/(2*(1+1/16*ct*sinMu**2)))
+    SG = np.sin(np.deg2rad(gamma))
+    CG = np.cos(np.deg2rad(gamma))                
+    SD = np.sin(np.deg2rad(delta))  
+    CD = np.cos(np.deg2rad(delta))  
+    k_1s = -1*(15*np.pi/32*np.tan((mu+np.cos(mu)**2*np.sin(mu)*(ct/2))/2));
+    
+    cp = sigma*((np.pi*cosMu**2*tsr*cl_alfa*(a - 1)**2 
+                 - (tsr*cd*np.pi*(CD**2*CG**2*SD**2*k**2 + 3*CD**2*SG**2*k**2 - 8*CD*tsr*SG*k + 8*tsr**2))/16 
+                 - (np.pi*tsr*sinMu**2*cd)/2 - (2*np.pi*cosMu*tsr**2*cl_alfa*theta)/3 
+                 + (np.pi*cosMu**2*k_1s**2*tsr*a**2*cl_alfa)/4 
+                 + (2*np.pi*cosMu*tsr**2*a*cl_alfa*theta)/3 + (2*np.pi*CD*cosMu*tsr*SG*cl_alfa*k*theta)/3 
+                 + (CD**2*cosMu**2*tsr*cl_alfa*k**2*np.pi*(a - 1)**2*(CG**2*SD**2 + SG**2))/(4*sinMu**2) 
+                 - (2*np.pi*CD*cosMu*tsr*SG*a*cl_alfa*k*theta)/3 
+                 + (CD**2*cosMu**2*k_1s**2*tsr*a**2*cl_alfa*k**2*np.pi*(3*CG**2*SD**2 + SG**2))/(24*sinMu**2) 
+                 - (np.pi*CD*CG*cosMu**2*k_1s*tsr*SD*a*cl_alfa*k)/sinMu 
+                 + (np.pi*CD*CG*cosMu**2*k_1s*tsr*SD*a**2*cl_alfa*k)/sinMu 
+                 + (np.pi*CD*CG*cosMu*k_1s*tsr**2*SD*a*cl_alfa*k*theta)/(5*sinMu) 
+                 - (np.pi*CD**2*CG*cosMu*k_1s*tsr*SD*SG*a*cl_alfa*k**2*theta)/(10*sinMu))/(2*np.pi))
+    
+    return cp
+#%%
 delta = -5
 sigma = 0.0416
-cd              = 0.004                         # drag coefficient      [-]
-c_l_alpha       = 4.796                         # lift slope            [1/rad]
-beta            = -3.177                        # blade twist angle     [deg]
+cd              = 0.0051                         # drag coefficient      [-]
+c_l_alpha       = 4.7662                         # lift slope            [1/rad]
+beta            = -3.336                         # blade twist angle     [deg]
 from scipy.optimize import fsolve
 from scipy.io import loadmat
 goal_etaP   = np.zeros((28*4))
@@ -100,12 +102,12 @@ for i in np.arange(4):
         eta_t_les = np.zeros(len(gamma_array))
         c = 0
         for j in gamma_array:
-            tsr          = tsr_in[len(gamma_array)*4*i+len(gamma_array)*p+c]
-            gamma        = gamma_in[len(gamma_array)*4*i+len(gamma_array)*p+c]
-            eta_p_les[c] = goal_etaP[len(gamma_array)*4*i+len(gamma_array)*p+c]
+            tsr          = tsr_in    [len(gamma_array)*4*i+len(gamma_array)*p+c]
+            gamma        = gamma_in  [len(gamma_array)*4*i+len(gamma_array)*p+c]
+            eta_p_les[c] = goal_etaP [len(gamma_array)*4*i+len(gamma_array)*p+c]
             eta_t_les[c] = goal_eta_T[len(gamma_array)*4*i+len(gamma_array)*p+c]
-            theta        = pitch_in[len(gamma_array)*4*i+len(gamma_array)*p+c]
-            shear        = shear_in[len(gamma_array)*4*i+len(gamma_array)*p+c]            
+            theta        = pitch_in  [len(gamma_array)*4*i+len(gamma_array)*p+c]
+            shear        = shear_in  [len(gamma_array)*4*i+len(gamma_array)*p+c]            
             c += 1
         cp = np.zeros(len(gamma_arrayF))
         ct = np.zeros(len(gamma_arrayF))
@@ -113,10 +115,10 @@ for i in np.arange(4):
         for jj in gamma_arrayF:
             gamma = gamma_arrayF[c]
             mu    = np.arccos(np.cos(np.deg2rad(gamma))*np.cos(np.deg2rad(delta)))
-            data  = (sigma,cd,c_l_alpha,gamma,delta,shear,np.cos(mu),np.sin(mu),tsr,theta+np.deg2rad(beta))
+            data  = (sigma,cd,c_l_alpha,gamma,delta,shear,np.cos(mu),np.sin(mu),tsr,theta+np.deg2rad(beta),mu)
             x0    = 0.6
             ct[c] = fsolve(find_ct, x0,args=data)
-            cp[c] = find_cp(sigma,cd,c_l_alpha,gamma,delta,shear,np.cos(mu),np.sin(mu),tsr,theta+np.deg2rad(beta),ct[c])
+            cp[c] = find_cp(sigma,cd,c_l_alpha,gamma,delta,shear,np.cos(mu),np.sin(mu),tsr,theta+np.deg2rad(beta),ct[c],mu)
             c += 1
         eta_t_mod = ct/ct[idx0]        
         eta_p_mod = cp/cp[idx0]
@@ -170,7 +172,7 @@ plt.text(23,0.965,'(c)')
 plt.subplot(2,2,4)
 plt.text(23,0.965,'(d)')
 plt.subplots_adjust(left=0.12, bottom=0.14, right=0.95, top=0.9, wspace=0.4, hspace=0.3)
-# plt.savefig('Figures/fig9.png',dpi=300)
+plt.savefig('Figures/fig9.png',dpi=300)
 plt.figure(2)
 plt.subplot(2,2,1)
 plt.text(23,0.94,'(a)')
@@ -182,4 +184,4 @@ plt.text(23,0.94,'(c)')
 plt.subplot(2,2,4)
 plt.text(23,0.94,'(d)')
 plt.subplots_adjust(left=0.12, bottom=0.14, right=0.95, top=0.9, wspace=0.4, hspace=0.3)
-# plt.savefig('Figures/fig7.png',dpi=300)
+plt.savefig('Figures/fig7.png',dpi=300)
