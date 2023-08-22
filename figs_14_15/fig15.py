@@ -9,29 +9,29 @@ def get_ct_power(x,wind_direction,nD):
     D = 130
     layout_xxx = [0, nD * D]
     layout_yyy = [0, 0]
-
+    #
     fi.reinitialize(wind_directions=[wind_direction],layout_x=layout_xxx, layout_y=layout_yyy)
-    
+    #   
     turb_type = fi.floris.farm.turbine_type[0]
     turb_type_derated = []
-    
+    #   
     turb_type["tsr"]          = x[0]
     turb_type["theta"]        = x[1]
     turb_type["turbine_type"] = 'WT0'
     turb_type_derated.append(turb_type.copy())
-    
+    #  
     turb_type["tsr"]          = 8.20949995#x[3]
     turb_type["theta"]        = 1.08500285#x[4]
     turb_type["turbine_type"] = 'WT1'
     turb_type_derated.append(turb_type.copy())
-    
+    #  
     fi.reinitialize(turbine_type=turb_type_derated)
     yaw_angles        = np.zeros((1,1,2))
     yaw_angles[0,0,:] = np.array([x[2],0])
     fi.calculate_wake(yaw_angles=yaw_angles)    
     thrust_coeff  = fi.get_turbine_Cts()
     p=np.array(fi.get_turbine_powers()) 
-
+    #
     return thrust_coeff, p
 #%% Load results of optimization with modified floris
 nD = 5
