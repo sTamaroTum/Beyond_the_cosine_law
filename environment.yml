@@ -10,4 +10,3 @@ dependencies:
   - coloredlogs
   - numexpr
   - shapely
-  - jupyterlab_trust_html
