@@ -10,3 +10,5 @@ The 3D figures in Fig. 2 can be visualized at the following links (if the screen
 - https://bndr.it/vvvt5
 - https://bndr.it/8q696
 
+DOI: [![DOI](https://zenodo.org/badge/675634733.svg)](https://zenodo.org/badge/latestdoi/675634733)
+
