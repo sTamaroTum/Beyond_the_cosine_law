@@ -4,13 +4,10 @@ This repository includes
 - numerical and experimental data required to reproduce Figures 5 to 15 
 - a modified version of FLORIS to compute wind farm effects using the IEA 3MW wind turbine
 
-The Jupyter notebooks can be executed in Binder at this link: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sTamaroTum/Beyond_the_cosine_law/main)
+The Jupyter notebooks can be executed in Binder at this link: [![Binder](https://mybinder.org/badge_logo.svg)](https://mybinder.org/v2/gh/sTamaroTum/Beyond_the_cosine_law/v2)
 
 The 3D figures in Fig. 2 can be visualized at the following links (if the screen appears blank, click on "Trust HTML")
 - https://bndr.it/vvvt5
 - https://bndr.it/8q696
 
-[![DOI](https://zenodo.org/badge/675634733.svg)](https://zenodo.org/badge/latestdoi/675634733)
-
-
-
+[![DOI](https://zenodo.org/badge/675634733.svg)](https://zenodo.org/doi/10.5281/zenodo.8378702)
